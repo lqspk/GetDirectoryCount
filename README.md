@@ -1,0 +1,2 @@
+# GetDirectoryCount
+获取指定目录下的所有文件数量和空目录数量
