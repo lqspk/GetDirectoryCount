@@ -135,7 +135,7 @@ namespace GetDirectoryCount
         public static DateTime ConvertToDateTime(TimeSpan timeSpan)
         {
             var start = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            return start.AddMilliseconds(timeSpan.TotalMilliseconds).AddHours(8);
+            return start.AddMilliseconds(timeSpan.TotalMilliseconds);
         }
     }
 }
