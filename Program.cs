@@ -19,7 +19,11 @@ namespace GetDirectoryCount
         //计时器
         static Stopwatch stopwatch = new Stopwatch();
 
-        
+        //所有文件总数对象锁
+        private readonly static object lockFileCountObject = new object();
+
+        //空目录总数对象锁
+        private readonly static object lockEmptyDirectoryCountObject = new object();
 
         static void Main(string[] args)
         {
@@ -54,7 +58,7 @@ namespace GetDirectoryCount
             List<Task> taskList = new List<Task>();
 
             //获取当前输入的目录的文件数量
-            var task = Task.Run(() => { fileCount += GetFileCount(root); });
+            var task = Task.Run(() => { IncEmptyDirectoryCount(GetFileCount(root)); });
             taskList.Add(task);
 
             //获取子目录
@@ -109,7 +113,9 @@ namespace GetDirectoryCount
         {
             //获取当前目录下的文件数量
             int count = GetFileCount(pathInfo);
-            fileCount += count;
+
+            //所有文件数量递增
+            IncFileCount(count);
 
             //获取当前目录下的子目录数量
             var pathInfos = pathInfo.GetDirectories();
@@ -120,10 +126,10 @@ namespace GetDirectoryCount
             }
 
             //如果文件数量和子目录数量为0
-            if (count + pathInfos.Length == 0)
+            if (count == 0 && pathInfos.Length == 0)
             {
                 //空目录数量递增1
-                emptyDirectoryCount++;
+                IncEmptyDirectoryCount(1);
             }
         }
 
@@ -132,10 +138,34 @@ namespace GetDirectoryCount
         /// </summary>
         /// <param name="timeSpan">时间戳</param>
         /// <returns></returns>
-        public static DateTime ConvertToDateTime(TimeSpan timeSpan)
+        static DateTime ConvertToDateTime(TimeSpan timeSpan)
         {
             var start = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             return start.AddMilliseconds(timeSpan.TotalMilliseconds);
+        }
+
+        /// <summary>
+        /// 递增所有文件总数
+        /// </summary>
+        /// <param name="num">数量</param>
+        static void IncFileCount(int num)
+        {
+            lock(lockFileCountObject)
+            {
+                fileCount += num;
+            }
+        }
+
+        /// <summary>
+        /// 递增空目录总数
+        /// </summary>
+        /// <param name="num">数量</param>
+        static void IncEmptyDirectoryCount(int num)
+        {
+            lock (lockEmptyDirectoryCountObject)
+            {
+                emptyDirectoryCount += num;
+            }
         }
     }
 }
